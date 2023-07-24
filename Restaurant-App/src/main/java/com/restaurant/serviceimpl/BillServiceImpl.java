@@ -1,11 +1,16 @@
 package com.restaurant.serviceimpl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.pdfbox.io.IOUtils;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -191,5 +196,59 @@ public class BillServiceImpl implements BillService {
 			e.printStackTrace();
 		}
 		return new ResponseEntity<List<Bill>>(list, HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<Byte[]> getPdf(Map<String, Object> requestMap) {
+		log.info("Inside getPdf {}", requestMap);
+		try {
+			Byte [] byteArray = new Byte[0];
+			if(!requestMap.containsKey("uuid") && validateRequestMap(requestMap)) {
+				return new ResponseEntity<Byte[]>(byteArray,HttpStatus.BAD_REQUEST);
+			}
+			String filePath = RestaurantConstants.STORE_LOCATION + "\\" + (String) requestMap.get("uuid") + ".pdf";
+			if(RestaurantUtils.isFileExists(filePath)) {
+				byteArray = getByteArray(filePath);
+				return new ResponseEntity<Byte[]>(byteArray, HttpStatus.OK);
+			} else {
+				requestMap.put("isGenerate", false);
+				generateReport(requestMap);
+				byteArray = getByteArray(filePath);
+				return new ResponseEntity<Byte[]>(byteArray, HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<Byte[]>(new Byte[0], HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	private Byte[] getByteArray(String filePath) throws Exception {
+		File file = new File(filePath);
+		InputStream targetStream = new FileInputStream(file);
+		byte[] byteArray = IOUtils.toByteArray(targetStream);
+		Byte [] byteArrayObject = new Byte[byteArray.length];
+		Integer i = 0;
+		for(byte b: byteArray) {
+			byteArrayObject[i++] = Byte.valueOf(b);
+		}
+		targetStream.close();
+		return byteArrayObject;
+	}
+
+	@Override
+	public ResponseEntity<String> deleteBill(Integer id) {
+		try {
+			Optional<Bill> optional = billDao.findById(id);
+			if(!optional.isEmpty()) {
+				billDao.deleteById(id);
+				return RestaurantUtils.getResponseEntity("Bill deleted successfully.", HttpStatus.OK);
+			} else {
+				return RestaurantUtils.getResponseEntity("Bill id does not exists.", HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return RestaurantUtils.getResponseEntity(RestaurantConstants.SOMETHING_WENT_WRONG,
+				HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }
