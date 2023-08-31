@@ -15,16 +15,16 @@ import com.restaurant.wrapper.UserWrapper;
 public interface UserRest {
 
 	@PostMapping(path = "/signup")
-	public ResponseEntity<String> signUp(@RequestBody(required = true) Map<String, String> requestMap);
+	public ResponseEntity<String> signUp(@RequestBody Map<String, String> requestMap);
 
 	@PostMapping(path = "/login")
-	public ResponseEntity<String> login(@RequestBody(required = true) Map<String, String> requestMap);
+	public ResponseEntity<String> login(@RequestBody Map<String, String> requestMap);
 
 	@GetMapping("/get")
 	public ResponseEntity<List<UserWrapper>> getAllUser();
 
 	@PostMapping("/update")
-	public ResponseEntity<String> update(@RequestBody(required = true) Map<String, String> requestMap);
+	public ResponseEntity<String> update(@RequestBody Map<String, String> requestMap);
 
 	@GetMapping(path = "/checkToken")
 	ResponseEntity<String> checkToken();

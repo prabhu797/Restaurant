@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
 		} catch (Exception e) {
 			log.error("{}", e);
 		}
-		return RestaurantUtils.getResponseEntity(RestaurantConstants.SOMETHING_WENT_WRONG, HttpStatus.BAD_REQUEST);
+		return RestaurantUtils.getResponseEntity(RestaurantConstants.SOMETHING_WENT_WRONG, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@Override
